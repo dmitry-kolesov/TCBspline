@@ -9,6 +9,7 @@ namespace TCBspline
     class DataGraphic
     {
         //private PictureBox graphPB;
+        private PointF[] initPoints;
         private PointF[] points;
         private float width;
         private float height;
@@ -36,6 +37,7 @@ namespace TCBspline
                 this.width = width;
                 this.height = height;
 
+                initPoints = points;
                 this.points = Scale(points, Scale);
 
                 this.tension = tension;
@@ -93,10 +95,11 @@ namespace TCBspline
                 var r1 = CalcR1(p[i], p[i + 1], p[i + 2]);
                 var r2 = CalcR1(p[i + 1], p[i + 2], p[i + 3]);
                 var delta = 1f / discrete;
-                var start = 0;
+                var start = 0f;//t = (p.Length - i); / (p2.T - p1.T)
                 for (int j = 0; j < discrete; j++)
                 {
-                    result[i * discrete + j] = CalcInPoint(p[i], p[i + 1], r1, r2, start + delta);
+                    result[i * discrete + j] = CalcInPoint(p[i], p[i + 1], r1, r2, start);
+                    start += delta;
                 }
             }
 

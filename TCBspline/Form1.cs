@@ -22,6 +22,11 @@ namespace TCBspline
             continuityBar.ValueChanged += bar_ValueChanged;
             biasBar.ValueChanged += bar_ValueChanged;
 
+            InitPictureBox();
+        }
+
+        private void InitPictureBox()
+        {
             graphBmp = new Bitmap(pictureBox.Width, pictureBox.Height);
             pictureBox.Image = graphBmp;
             Graphics g = Graphics.FromImage(graphBmp);
@@ -38,15 +43,17 @@ namespace TCBspline
         List<PointF> points = new List<PointF>();
         void pictureBox_MouseClick(object sender, MouseEventArgs e)
         {
+            InitPictureBox();
             points.Add(new PointF(e.Location.X, e.Location.Y));
-            DrawPoint(new Point(e.Location.X, e.Location.Y));
+            //DrawPoint(new Point(e.Location.X, e.Location.Y));
             DrawPoints(points);
             //Draw();
         }
 
         void bar_ValueChanged(object sender, EventArgs e)
         {
-            //Draw();
+            InitPictureBox();
+            Draw();
         }
 
 
