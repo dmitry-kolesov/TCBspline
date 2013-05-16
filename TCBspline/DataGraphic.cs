@@ -91,30 +91,48 @@ namespace TCBspline
             var p = points;
             var result = new PointF[p.Length * discrete];
 
-            //var r1 = (((new MyPointF(p[1])) - (new MyPointF(p[0]))) * (1 - tension)).Point;
-            //var r2 = r1;
-
             var delta = 1f / discrete;
             var start = 0f;
-            //for (int j = 0; j < discrete; j++)
-            //{
-            //    result[j] = CalcInPoint(p[0], p[1], r1, r2, start);
-            //    start += delta;
-            //}
+
             PointF r1, r2;
-            for (int i = 0; i < p.Length; i++)
+            PointF ra1 = new PointF();
+            MyPointF rb = new MyPointF(ra1);
+            for (int i = 1; i < p.Length - 1; i++)
             {
-                var next1 = (i + 1) % p.Length;
-                var next2 = (i + 2) % p.Length;
-                var next3 = (i + 3) % p.Length;
-                r1 = CalcR1(p[i], p[next1], p[next2]);
-                r2 = CalcR1(p[next1], p[next2], p[next3]);
+                //var next1 = (i + 1) % p.Length;
+                var next = (i + 1) % p.Length;
+                //var prev = (i - 1) % p.Length;
+                r1 = CalcRAB(p[i - 1], p[i], p[i + 1], true);
+                if (i == 1) ra1 = r1;
+                r2 = CalcRAB(p[i - 1], p[i], p[i + 1], false);
+                if (i == p.Length - 1) rb = new MyPointF(r2);
                 start = 0f;//t = (p.Length - i); / (p2.T - p1.T)
                 for (int j = 0; j < discrete; j++)
                 {
-                    result[i * discrete + j] = CalcInPoint(p[i], p[next1], r1, r2, start);
+                    result[i * discrete + j] = CalcInPoint(p[i], p[i + 1], r1, r2, start);
                     start += delta;
                 }
+            }
+
+            r1 = ((new MyPointF(p[1])) - (new MyPointF(p[0]))).Point;
+            r2 = ((1.5f * ((new MyPointF(p[1])) - (new MyPointF(p[0]))) - 0.5f * new MyPointF(ra1)) * (1 - tension)).Point;
+
+            for (int j = 0; j < discrete; j++)
+            {
+                result[j] = CalcInPoint(p[0], p[1], r1, r2, start);
+                start += delta;
+            }
+
+            var lastInd = p.Length - 1;
+            var cur = new MyPointF(p[lastInd]);
+            var prev = new MyPointF(p[lastInd - 1]);
+            r1 = ((1.5f * (cur - prev) - 0.5f * rb) * (1 - tension)).Point;
+            r2 = ((new MyPointF(p[lastInd])) - (new MyPointF(p[lastInd - 1]))).Point;
+
+            for (int j = 0; j < discrete; j++)
+            {
+                result[lastInd * discrete + j] = CalcInPoint(prev.Point, cur.Point, r1, r2, start);
+                start += delta;
             }
 
             //start = 0f;
@@ -136,6 +154,17 @@ namespace TCBspline
             //}
             var result2 = result;// Scale(result, BackScale);
             return result2;
+        }
+
+        private PointF CalcRAB(PointF p11, PointF p22, PointF p33, bool isRa)
+        {
+            var g1 = (new MyPointF(p22) - new MyPointF(p11)) * (1f + bias);
+            var g2 = (new MyPointF(p33) - new MyPointF(p22)) * (1f - bias);
+            var g3 = g2 - g1;
+            MyPointF ra;
+            if (isRa) ra = (1f - tension) * (g1 + 0.5f * g3 * (1f + continuty));
+            else ra = (1f - tension) * (g1 + 0.5f * g3 * (1f - continuty));
+            return ra.Point;
         }
 
         private PointF CalcR1(PointF p11, PointF p22, PointF p33)
