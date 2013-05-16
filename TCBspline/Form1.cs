@@ -89,7 +89,7 @@ namespace TCBspline
 
         public void Draw(PointF[] spline)
         {
-            Graphics g = Graphics.FromImage(pictureBox.Image);
+            Graphics g = Graphics.FromImage(graphBmp);
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             PointF p1 = spline[0];
             //Point p2;
@@ -100,7 +100,8 @@ namespace TCBspline
 
                 p1 = p2;
             }
-
+            pictureBox.Image = graphBmp;
+            g.Dispose();
             //for (int i = from; (i < data.X.Count) && (i < to); i++)
             //{
             //    p2 = new Point(ScaleX(data.X[i], inXMin, inXMax, outXMin, outXMax), ScaleY(data.Y[i], inYMin, inYMax, outYMin, outYMax));

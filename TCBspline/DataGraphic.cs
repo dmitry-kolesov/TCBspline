@@ -19,7 +19,7 @@ namespace TCBspline
         private int outXMin = -10;
         private int outXMax = 10;
         private int outYMin = -10;
-        private int outYMax = -10;
+        private int outYMax = 10;
 
         //static Bitmap graphBmp;// = new Bitmap();
 
@@ -44,8 +44,11 @@ namespace TCBspline
             }
             else
             {
-                MessageBox.Show("Please select points");
-                throw new Exception("Points was not selected");
+                if (points.Length > 2)
+                {
+                    MessageBox.Show("Please select points");
+                    throw new Exception("Points was not selected");
+                }
             }
         }
 
@@ -89,8 +92,8 @@ namespace TCBspline
             {
                 var r1 = CalcR1(p[i], p[i + 1], p[i + 2]);
                 var r2 = CalcR1(p[i + 1], p[i + 2], p[i + 3]);
-                var delta = (p[i + 1].X - p[i].X) / discrete;
-                var start = p[i].X;
+                var delta = 1f / discrete;
+                var start = 0;
                 for (int j = 0; j < discrete; j++)
                 {
                     result[i * discrete + j] = CalcInPoint(p[i], p[i + 1], r1, r2, start + delta);
