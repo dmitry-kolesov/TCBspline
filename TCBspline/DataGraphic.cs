@@ -38,7 +38,7 @@ namespace TCBspline
                 this.height = height;
 
                 initPoints = points;
-                this.points = Scale(points, Scale);
+                this.points = points;// Scale(points, Scale);
 
                 this.tension = tension;
                 this.continuty = continuty;
@@ -82,7 +82,7 @@ namespace TCBspline
 
         private static float ScaleX(float inX, float inMin, float inMax, float outMin, float outMax)
         {
-            var newX = ((float)(inX - inMin) / (float)(inMax - inMin) * (float)(outMax - outMin) * 0.95);
+            var newX = ((float)(inX - inMin) / (float)(inMax - inMin) * (float)(outMax - outMin));
             return (float)newX;
         }
 
@@ -103,7 +103,7 @@ namespace TCBspline
                 }
             }
 
-            var result2 = Scale(result, BackScale);
+            var result2 = result;// Scale(result, BackScale);
             return result2;
         }
 
