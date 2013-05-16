@@ -24,18 +24,22 @@ namespace TCBspline
         {
             return p1 * (double)coef;
         }
+
         public static MyPointF operator *(MyPointF p1, float coef)
         {
-            return p1 * coef;
+            return  p1 * (double)coef;
         }
+
         public static MyPointF operator *(MyPointF p1, double coef)
         {
             return new MyPointF(new PointF(p1.X * (float)coef, p1.Y * (float)coef));
         }
+
         public static MyPointF operator +(MyPointF p1, MyPointF p2)
         {
             return new MyPointF(new PointF(p1.X + p2.X, p1.Y + p2.Y));
         }
+
         public static MyPointF operator -(MyPointF p1, MyPointF p2)
         {
             return new MyPointF(new PointF(p1.X - p2.X, p1.Y - p2.Y));

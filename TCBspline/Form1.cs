@@ -37,16 +37,20 @@ namespace TCBspline
         void pictureBox_Paint(object sender, PaintEventArgs e)
         {
             DrawPoints(points, e.Graphics);
-            Draw();
+            if(wasChanged)
+                Draw();
+            wasChanged = false;
         }
 
         List<PointF> points = new List<PointF>();
+        bool wasChanged = false;
         void pictureBox_MouseClick(object sender, MouseEventArgs e)
         {
             InitPictureBox();
             points.Add(new PointF(e.Location.X, e.Location.Y));
             //DrawPoint(new Point(e.Location.X, e.Location.Y));
             DrawPoints(points);
+            wasChanged = true;
             //Draw();
         }
 
@@ -121,6 +125,12 @@ namespace TCBspline
             //    g.DrawString(String.Format("P{0} ({1}, {2})", i.ToString(), data.X[i], data.Y[i]), drawFont, drawBrush, p2);
             //    p1 = p2;
             //}
+        }
+
+        private void clearButton_Click(object sender, EventArgs e)
+        {
+            InitPictureBox();
+            points.Clear();
         }
     }
 }
