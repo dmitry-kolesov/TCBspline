@@ -32,6 +32,7 @@ namespace TCBspline
         void pictureBox_Paint(object sender, PaintEventArgs e)
         {
             DrawPoints(points, e.Graphics);
+            Draw();
         }
 
         List<PointF> points = new List<PointF>();
@@ -39,6 +40,7 @@ namespace TCBspline
         {
             points.Add(new PointF(e.Location.X, e.Location.Y));
             DrawPoint(new Point(e.Location.X, e.Location.Y));
+            DrawPoints(points);
             //Draw();
         }
 
@@ -64,6 +66,14 @@ namespace TCBspline
             }
         }
 
+        private void DrawPoints(List<PointF> points)
+        {
+            Graphics g = Graphics.FromImage(graphBmp);
+            foreach (var point in points)
+                g.FillEllipse( new SolidBrush(Color.Green), new Rectangle((int)point.X, (int)point.Y, 5, 5));
+            pictureBox.Image = graphBmp;
+            g.Dispose();
+        } 
         private void DrawPoints(List<PointF> points, Graphics g)
         {
             //Graphics g = Graphics.FromImage(graphBmp);
@@ -79,7 +89,7 @@ namespace TCBspline
 
         public void Draw(PointF[] spline)
         {
-            Graphics g = Graphics.FromImage(graphBmp);
+            Graphics g = Graphics.FromImage(pictureBox.Image);
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             PointF p1 = spline[0];
             //Point p2;
