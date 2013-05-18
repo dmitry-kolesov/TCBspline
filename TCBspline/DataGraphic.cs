@@ -47,37 +47,37 @@ namespace TCBspline
             }
         }
 
-        private PointF[] Scale(PointF[] points, ScaleDelegate scale)
-        {
-            PointF[] result = new PointF[points.Length];
-            int i = 0;
-            foreach (var point in points)
-            {
-                result[i] = scale(point);
-                i++;
-            }
-            return result;
-        }
+        //private PointF[] Scale(PointF[] points, ScaleDelegate scale)
+        //{
+        //    PointF[] result = new PointF[points.Length];
+        //    int i = 0;
+        //    foreach (var point in points)
+        //    {
+        //        result[i] = scale(point);
+        //        i++;
+        //    }
+        //    return result;
+        //}
 
-        public delegate PointF ScaleDelegate(PointF point);
+        //public delegate PointF ScaleDelegate(PointF point);
 
-        private PointF BackScale(PointF point)
-        {
-            var result = new PointF(ScaleX(point.X, outXMin, outXMax, 0, width), ScaleX(point.Y, outYMin, outYMax, 0, height));
-            return result;
-        }
+        //private PointF BackScale(PointF point)
+        //{
+        //    var result = new PointF(ScaleX(point.X, outXMin, outXMax, 0, width), ScaleX(point.Y, outYMin, outYMax, 0, height));
+        //    return result;
+        //}
 
-        private PointF Scale(PointF point)
-        {
-            var result = new PointF(ScaleX(point.X, 0, width, outXMin, outXMax), ScaleX(point.Y, 0, height, outYMin, outYMax));
-            return result;
-        }
+        //private PointF Scale(PointF point)
+        //{
+        //    var result = new PointF(ScaleX(point.X, 0, width, outXMin, outXMax), ScaleX(point.Y, 0, height, outYMin, outYMax));
+        //    return result;
+        //}
 
-        private static float ScaleX(float inX, float inMin, float inMax, float outMin, float outMax)
-        {
-            var newX = ((float)(inX - inMin) / (float)(inMax - inMin) * (float)(outMax - outMin));
-            return (float)newX;
-        }
+        //private static float ScaleX(float inX, float inMin, float inMax, float outMin, float outMax)
+        //{
+        //    var newX = ((float)(inX - inMin) / (float)(inMax - inMin) * (float)(outMax - outMin));
+        //    return (float)newX;
+        //}
 
         internal MyPointF[] GetSpline(int discrete = 10)
         {
@@ -111,27 +111,28 @@ namespace TCBspline
                     r2 = (cur - prev);//((new MyPointF(p[lastInd])) - (new MyPointF(p[lastInd - 1]))).Point;
                 }
                 if (i == p.Length - 2) rbLast = r2;
-                start = 0f;//t = (p.Length - i); / (p2.T - p1.T)
-                for (int j = 0; j < discrete; j++)
-                {
-                    result[i * discrete + j] = CalcInPoint(p[i], p[next], r1, r2, start);
-                    start += delta;
-                }
+                AddRange(result, discrete, delta, i, p[i], p[next], r1, r2);
             }
             result[result.Length - 1] = p[p.Length - 1];
 
             r1 = (((p[1])) - ((p[0])));
             r2 = ((1.5f * (((p[1])) - ((p[0]))) - 0.5f * ra1) * (1 - tension));
-            start = 0f;
-            for (int j = 0; j < discrete; j++)
-            {
-                result[j] = CalcInPoint(p[0], p[1], r1, r2, start);
-                start += delta;
-            }
+            AddRange(result, discrete, delta, 0, p[0], p[1], r1, r2);
+
             var result2 = result;// Scale(result, BackScale);
             return result2;
         }
-        
+
+        private void AddRange(MyPointF[] result, int discrete, float delta, int i, MyPointF p1, MyPointF p2, MyPointF r1, MyPointF r2)
+        {
+            var start = 0f;
+            for (int j = 0; j < discrete; j++)
+            {
+                result[i * discrete + j] = CalcInPoint(p1, p2, r1, r2, start);
+                start += delta;
+            }
+        }
+
         private MyPointF CalcRAB(MyPointF p11, MyPointF p22, MyPointF p33, bool isRa)
         {
             var g1 = ((p22) - (p11)) * (1f + bias);
