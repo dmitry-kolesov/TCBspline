@@ -36,8 +36,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.clearButton = new System.Windows.Forms.Button();
-            this.isCloseRB = new System.Windows.Forms.RadioButton();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.tensionBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.biasBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.continuityBar)).BeginInit();
@@ -113,35 +111,11 @@
             this.clearButton.UseVisualStyleBackColor = true;
             this.clearButton.Click += new System.EventHandler(this.clearButton_Click);
             // 
-            // isCloseRB
-            // 
-            this.isCloseRB.AutoSize = true;
-            this.isCloseRB.Location = new System.Drawing.Point(12, 593);
-            this.isCloseRB.Name = "isCloseRB";
-            this.isCloseRB.Size = new System.Drawing.Size(57, 17);
-            this.isCloseRB.TabIndex = 12;
-            this.isCloseRB.TabStop = true;
-            this.isCloseRB.Text = "Closed";
-            this.isCloseRB.UseVisualStyleBackColor = true;
-            // 
-            // radioButton1
-            // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Location = new System.Drawing.Point(12, 616);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(57, 17);
-            this.radioButton1.TabIndex = 12;
-            this.radioButton1.TabStop = true;
-            this.radioButton1.Text = "Closed";
-            this.radioButton1.UseVisualStyleBackColor = true;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1097, 668);
-            this.Controls.Add(this.radioButton1);
-            this.Controls.Add(this.isCloseRB);
             this.Controls.Add(this.clearButton);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -171,8 +145,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button clearButton;
-        private System.Windows.Forms.RadioButton isCloseRB;
-        private System.Windows.Forms.RadioButton radioButton1;
 
     }
 }
