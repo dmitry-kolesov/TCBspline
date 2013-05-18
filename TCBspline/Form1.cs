@@ -12,7 +12,11 @@ namespace TCBspline
 {
     public partial class Form1 : Form
     {
-        static Bitmap graphBmp;// = new Bitmap(pictureBox.Width, pictureBox.Height);
+        static Bitmap graphBmp;
+        List<MyPointF> points = new List<MyPointF>();
+        bool wasChanged = false;
+        MyPointF selected;
+
         public Form1()
         {
             InitializeComponent();
@@ -22,7 +26,51 @@ namespace TCBspline
             continuityBar.ValueChanged += bar_ValueChanged;
             biasBar.ValueChanged += bar_ValueChanged;
 
+            pictureBox.MouseDown += pictureBox_MouseDown;
+            pictureBox.MouseMove += pictureBox_MouseMove;
+            pictureBox.MouseUp += pictureBox_MouseUp;
+
             InitPictureBox();
+        }
+
+        void pictureBox_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (selected != null)
+            {
+                selected.UnSelect();
+                selected = null;
+            }
+            pictureBox.Invalidate();
+        }
+
+        void pictureBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (selected != null)
+            {
+                InitPictureBox();
+                selected.UpdatePoint(new PointF(e.X, e.Y));
+                Draw();
+            }
+        }
+
+        void pictureBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                var founded = GetPointInSurrounding(e.Location);
+                if ((founded != null) && points.Contains(founded))
+                {
+                    founded.SetSelected(points);
+                    selected = founded;
+                }
+                else
+                {
+                    InitPictureBox();
+                    points.Add(new MyPointF(e.Location.X, e.Location.Y));
+                    wasChanged = true;
+                }
+
+            }
         }
 
         private void InitPictureBox()
@@ -37,21 +85,38 @@ namespace TCBspline
         void pictureBox_Paint(object sender, PaintEventArgs e)
         {
             DrawPoints(points, e.Graphics);
-            if(wasChanged)
+            if (wasChanged)
                 Draw();
             wasChanged = false;
         }
 
-        List<PointF> points = new List<PointF>();
-        bool wasChanged = false;
         void pictureBox_MouseClick(object sender, MouseEventArgs e)
         {
-            InitPictureBox();
-            points.Add(new PointF(e.Location.X, e.Location.Y));
-            //DrawPoint(new Point(e.Location.X, e.Location.Y));
-            DrawPoints(points);
-            wasChanged = true;
-            //Draw();
+            if (e.Button == System.Windows.Forms.MouseButtons.Right) // add
+            {
+                var founded = GetPointInSurrounding(e.Location);
+                if (founded != null)
+                {
+                    InitPictureBox();
+                    points.Remove(founded);
+                    pictureBox.Invalidate();
+                    Draw();
+                }
+            }
+        }
+
+        private MyPointF GetPointInSurrounding(Point mousePosition)
+        {
+            if (points != null && points.Count > 0)
+            {
+                var location = new MyPointF(mousePosition);
+                var founded = points.Where(p => location.DistanceFrom(p) < 5f).FirstOrDefault();
+                if (founded != null && points.Contains(founded))
+                {
+                    return founded;
+                }
+            }
+            return null;
         }
 
         void bar_ValueChanged(object sender, EventArgs e)
@@ -60,16 +125,18 @@ namespace TCBspline
             Draw();
         }
 
-
-
         float devider = 10f;
         private void Draw()
         {
             try
             {
-                DataGraphic dg = new DataGraphic(points.ToArray(), pictureBox.Size.Width, pictureBox.Size.Height, (float)tensionBar.Value / devider, (float)continuityBar.Value / devider, (float)biasBar.Value / devider);
-                var result = dg.GetSpline();
-                Draw(result);
+
+                if (points != null && points.Count > 2)
+                {
+                    DataGraphic dg = new DataGraphic(points.ToArray(), pictureBox.Size.Width, pictureBox.Size.Height, (float)tensionBar.Value / devider, (float)continuityBar.Value / devider, (float)biasBar.Value / devider);
+                    var result = dg.GetSpline();
+                    Draw(result);
+                }
             }
             catch (Exception ex)
             {
@@ -77,35 +144,39 @@ namespace TCBspline
             }
         }
 
-        private void DrawPoints(List<PointF> points)
+        private void DrawPoints(List<MyPointF> points)
         {
             Graphics g = Graphics.FromImage(graphBmp);
-            foreach (var point in points)
-                g.FillEllipse( new SolidBrush(Color.Green), new Rectangle((int)point.X, (int)point.Y, 5, 5));
+            DrawPoints(points, g);
             pictureBox.Image = graphBmp;
             g.Dispose();
-        } 
-        private void DrawPoints(List<PointF> points, Graphics g)
+        }
+        private void DrawPoints(List<MyPointF> points, Graphics g)
         {
-            //Graphics g = Graphics.FromImage(graphBmp);
             foreach (var point in points)
-                g.FillEllipse( new SolidBrush(Color.Green), new Rectangle((int)point.X, (int)point.Y, 5, 5));
-        } 
-
-        private void DrawPoint(Point point)
-        {
-            Graphics g = Graphics.FromImage(graphBmp);
-            g.FillEllipse(Brushes.Green, new Rectangle(point.X, point.Y, 5, 5));
+                DrawPoint(point, g);
         }
 
-        public void Draw(PointF[] spline)
+        private void DrawPoint(MyPointF point)
+        {
+            Graphics g = Graphics.FromImage(graphBmp);
+            DrawPoint(point, g);
+            pictureBox.Image = graphBmp;
+            g.Dispose();
+        }
+
+        private void DrawPoint(MyPointF point, Graphics g)
+        {
+            g.FillEllipse(new SolidBrush(point.Color), new Rectangle((int)point.X, (int)point.Y, 5, 5));
+        }
+
+        internal void Draw(MyPointF[] spline)
         {
             Graphics g = Graphics.FromImage(graphBmp);
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            PointF p1 = spline[0];
-            //Point p2;
+            var p1 = spline[0];
             for (int i = 0; i < spline.Length - 1; i++)
-            {                
+            {
                 var p2 = spline[i + 1];
                 g.DrawLine(new Pen(Color.Red, 2), p1.X, p1.Y, p2.X, p2.Y);
 
@@ -113,18 +184,6 @@ namespace TCBspline
             }
             pictureBox.Image = graphBmp;
             g.Dispose();
-            //for (int i = from; (i < data.X.Count) && (i < to); i++)
-            //{
-            //    p2 = new Point(ScaleX(data.X[i], inXMin, inXMax, outXMin, outXMax), ScaleY(data.Y[i], inYMin, inYMax, outYMin, outYMax));
-
-            //    if (i > from)
-            //        g.DrawLine(new Pen(Color.Red, 2), p1.X, p1.Y, p2.X, p2.Y);
-
-            //    Font drawFont = new Font("Arial", 7);
-            //    SolidBrush drawBrush = new SolidBrush(Color.Black);
-            //    g.DrawString(String.Format("P{0} ({1}, {2})", i.ToString(), data.X[i], data.Y[i]), drawFont, drawBrush, p2);
-            //    p1 = p2;
-            //}
         }
 
         private void clearButton_Click(object sender, EventArgs e)

@@ -9,8 +9,8 @@ namespace TCBspline
     class DataGraphic
     {
         //private PictureBox graphPB;
-        private PointF[] initPoints;
-        private PointF[] points;
+        private MyPointF[] initPoints;
+        private MyPointF[] points;
         private float width;
         private float height;
         private float tension;
@@ -24,7 +24,7 @@ namespace TCBspline
 
         //static Bitmap graphBmp;// = new Bitmap();
 
-        public DataGraphic(PointF[] points, int width, int height, float tension, float continuty, float bias)//, PictureBox pb)
+        public DataGraphic(MyPointF[] points, int width, int height, float tension, float continuty, float bias)//, PictureBox pb)
         {
             if (points != null && points.Length > 2)
             {
@@ -86,18 +86,18 @@ namespace TCBspline
             return (float)newX;
         }
 
-        public PointF[] GetSpline(int discrete = 10)
+        internal MyPointF[] GetSpline(int discrete = 10)
         {
             var p = points;
-            var result = new PointF[(p.Length - 1) * discrete + 1];
+            var result = new MyPointF[(p.Length - 1) * discrete + 1];
 
             var delta = 1f / discrete;
             var start = 0f;
 
-            PointF r1 = ((new MyPointF(p[1])) - (new MyPointF(p[0]))).Point;
-            PointF ra1 = new PointF();
-            PointF r2 = ((1.5f * ((new MyPointF(p[1])) - (new MyPointF(p[0]))) - 0.5f * new MyPointF(ra1)) * (1 - tension)).Point;
-            MyPointF rbLast = new MyPointF(ra1);
+            MyPointF r1 = (((p[1])) - ((p[0])));
+            MyPointF ra1 = r1;// new MyPointF();
+            MyPointF r2 = ((1.5f * (((p[1])) - ((p[0]))) - 0.5f * ra1) * (1 - tension));
+            MyPointF rbLast = (ra1);
             for (int i = 1; i < p.Length - 1; i++)
             {
                 //var next1 = (i + 1) % p.Length;
@@ -112,12 +112,12 @@ namespace TCBspline
                 if (i == p.Length - 1)
                 {
                     var lastInd = p.Length - 1;
-                    var cur = new MyPointF(p[lastInd]);
-                    var prev = new MyPointF(p[lastInd - 1]);
-                    r1 = ((1.5f * (cur - prev) - 0.5f * rbLast) * (1 - tension)).Point;
-                    r2 = (cur - prev).Point;//((new MyPointF(p[lastInd])) - (new MyPointF(p[lastInd - 1]))).Point;
+                    var cur = (p[lastInd]);
+                    var prev = (p[lastInd - 1]);
+                    r1 = ((1.5f * (cur - prev) - 0.5f * rbLast) * (1 - tension));
+                    r2 = (cur - prev);//((new MyPointF(p[lastInd])) - (new MyPointF(p[lastInd - 1]))).Point;
                 }
-                if (i == p.Length - 2) rbLast = new MyPointF(r2);
+                if (i == p.Length - 2) rbLast = r2;
                 start = 0f;//t = (p.Length - i); / (p2.T - p1.T)
                 for (int j = 0; j < discrete; j++)
                 {
@@ -127,8 +127,8 @@ namespace TCBspline
             }
             result[result.Length - 1] = p[p.Length - 1];
 
-            r1 = ((new MyPointF(p[1])) - (new MyPointF(p[0]))).Point;
-            r2 = ((1.5f * ((new MyPointF(p[1])) - (new MyPointF(p[0]))) - 0.5f * new MyPointF(ra1)) * (1 - tension)).Point;
+            r1 = (((p[1])) - ((p[0])));
+            r2 = ((1.5f * (((p[1])) - ((p[0]))) - 0.5f * ra1) * (1 - tension));
             start = 0f;
             for (int j = 0; j < discrete; j++)
             {
@@ -231,37 +231,37 @@ namespace TCBspline
         // }
 
 
-        private PointF CalcRAB(PointF p11, PointF p22, PointF p33, bool isRa)
+        private MyPointF CalcRAB(MyPointF p11, MyPointF p22, MyPointF p33, bool isRa)
         {
-            var g1 = (new MyPointF(p22) - new MyPointF(p11)) * (1f + bias);
-            var g2 = (new MyPointF(p33) - new MyPointF(p22)) * (1f - bias);
+            var g1 = ((p22) - (p11)) * (1f + bias);
+            var g2 = ((p33) - (p22)) * (1f - bias);
             var g3 = g2 - g1;
             MyPointF ra;
             if (isRa) ra = (1f - tension) * (g1 + 0.5f * g3 * (1f + continuty));
             else ra = (1f - tension) * (g1 + 0.5f * g3 * (1f - continuty));
-            return ra.Point;
+            return ra;
         }
 
-        private PointF CalcR1(PointF p11, PointF p22, PointF p33)
+        private MyPointF CalcR1(PointF p11, PointF p22, PointF p33)
         {
             var p1 = new MyPointF(p11);
             var p2 = new MyPointF(p22);
             var p3 = new MyPointF(p33);
             var r1 = (1 - tension) * (1 + bias) * (1 + continuty) / 2f * (p2 - p1) + (1 - tension) * (1 - bias) * (1 + continuty) / 2f * (p3 - p2);
-            return r1.Point;
+            return r1;
         }
 
-        private PointF CalcInPoint(PointF p11, PointF p22, PointF r11, PointF r22, float t)
+        private MyPointF CalcInPoint(MyPointF p11, MyPointF p22, MyPointF r11, MyPointF r22, float t)
         {
             var tSqure = Math.Pow(t, 2);
             var tCube = Math.Pow(t, 3);
-            var p1 = new MyPointF(p11);
-            var p2 = new MyPointF(p22);
-            var r1 = new MyPointF(r11);
-            var r2 = new MyPointF(r22);
+            var p1 = (p11);
+            var p2 = (p22);
+            var r1 = (r11);
+            var r2 = (r22);
             var ft = p1 * (2 * tCube - 3 * tSqure + 1) + r1 * (tCube - 2 * tSqure + t) + p2 * (-2 * tCube + 3 * tSqure) + r2 * (tCube - tSqure);
             //var fY = p1.Y * (2*tCube - 3*tSqure + 1) + r1.Y * (tCube - 2*tSqure + t) + p2.Y * (-2*tCube + 3*tSqure) + r2.Y * (tCube - tSqure);
-            return ft.Point;
+            return ft;
         }
 
     }
