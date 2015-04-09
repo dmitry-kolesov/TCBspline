@@ -7,20 +7,16 @@ using System.Windows.Forms;
 
 namespace TCBspline
 {
-    public partial class Form1 : Form
+    public partial class TcbSplineForm : Form
     {
-        Drawer drawer;
-        PointsLogic logic;
+        PointsLogicAndDrawerController controller;
 
-        public Form1()
+        public TcbSplineForm()
         {
             InitializeComponent();
 
-            drawer = new Drawer(this.pictureBox);
-            drawer.InitPictureBox();
-
-            logic = new PointsLogic();
-            logic.OnDraw += logic_Draw;
+            controller = new PointsLogicAndDrawerController(this.pictureBox);
+            controller.OnDraw += logic_Draw;
 
             pictureBox.Paint += pictureBox_Paint;
             pictureBox.MouseClick += pictureBox_MouseClick;
@@ -31,6 +27,13 @@ namespace TCBspline
             pictureBox.MouseDown += pictureBox_MouseDown;
             pictureBox.MouseMove += pictureBox_MouseMove;
             pictureBox.MouseUp += pictureBox_MouseUp;
+
+            pictureBox.SizeChanged += pictureBox_SizeChanged;
+        }
+
+        void pictureBox_SizeChanged(object sender, EventArgs e)
+        {
+            controller.InitPictureBox(pictureBox.Width, pictureBox.Height);
         }
 
         void logic_Draw()
@@ -40,26 +43,26 @@ namespace TCBspline
 
         void pictureBox_MouseUp(object sender, MouseEventArgs e)
         {
-            logic.UnSelectPoint();
+            controller.UnSelectPoint();
             pictureBox.Invalidate();
         }
 
         void pictureBox_MouseMove(object sender, MouseEventArgs e)
         {
-            logic.MoveSelectedPoint(drawer, e);
+            controller.MoveSelectedPoint(e);
         }
 
         void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                logic.SelectOrAddNewPoint(drawer, e);
+                controller.SelectOrAddNewPoint(e);
             }
         }
 
         void pictureBox_Paint(object sender, PaintEventArgs e)
         {
-            logic.PointsChanged(drawer, e);
+            controller.PointsChanged(e);
             Draw();
         }
 
@@ -67,24 +70,24 @@ namespace TCBspline
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Right) // delete
             {
-                logic.DeletePoint(drawer, e);
+                controller.DeletePoint(e);
             }
         }
 
         void bar_ValueChanged(object sender, EventArgs e)
         {
-            drawer.InitPictureBox();
+            controller.InitPictureBox();
             Draw();
         }
 
         private void Draw()
         {
-            drawer.Draw(logic.Points, tensionBar.Value, continuityBar.Value, biasBar.Value);
+            controller.Draw(tensionBar.Value, continuityBar.Value, biasBar.Value);
         }
 
         private void clearButton_Click(object sender, EventArgs e)
         {
-            logic.ClearPoints(drawer);
+            controller.ClearPoints();
         }
 
     }

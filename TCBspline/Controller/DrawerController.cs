@@ -3,32 +3,27 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
+using TCBspline.Model;
+
 namespace TCBspline
 {
-    internal class Drawer
+    internal class DrawerController
     {
-        //private static Drawer instance;
-        //internal static Drawer Instance
-        //{
-        //    get
-        //    {
-        //        if (instance == null)
-        //            instance = new Drawer();
-        //        return instance;
-        //    }
-        //}
-
-        PictureBox pictureBox;
+        /// todo - obviouslly it is not good to have control inside controller, 
+        /// and it could be solved by forwarding only sizes of picture box here
+        /// and after forwarding sizes of picture box on changing it is sizes
+        /// but for me my solution was faster to realize
+        //PictureBox pictureBox;
         Bitmap graphBmp;
-        
-        internal Drawer(PictureBox pictureBox)
+
+        internal DrawerController()//PictureBox pictureBox)
         {
             this.pictureBox = pictureBox;
         }
 
-        internal void InitPictureBox()
+        internal void InitPictureBox(int pictureBoxWidth, int pictureBoxHeight)
         {
-            graphBmp = new Bitmap(pictureBox.Width, pictureBox.Height);
+            graphBmp = new Bitmap(pictureBoxWidth, pictureBoxHeight);
             pictureBox.Image = graphBmp;
             Graphics g = Graphics.FromImage(graphBmp);
             SolidBrush b = new SolidBrush(Color.White);
@@ -42,14 +37,14 @@ namespace TCBspline
             {
                 if (points != null && points.Count > 2)
                 {
-                    DataGraphic dg = new DataGraphic(points.ToArray(), pictureBox.Size.Width, pictureBox.Size.Height, tensionBarValue / devider, continuityBarValue / devider, biasBarValue / devider);
+                    SplineCalculator dg = new SplineCalculator(points.ToArray(), pictureBox.Size.Width, pictureBox.Size.Height, tensionBarValue / devider, continuityBarValue / devider, biasBarValue / devider);
                     var result = dg.GetSpline();
                     Draw(result);
                 }
             }
             catch (Exception ex)
             {
-                ;
+                throw ex;
             }
         }
 

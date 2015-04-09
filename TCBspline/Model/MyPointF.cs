@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace TCBspline
+namespace TCBspline.Model
 {
     internal class MyPointF
     {
@@ -35,13 +35,13 @@ namespace TCBspline
         public void SetSelected(List<MyPointF> points)
         {
             Index = points.IndexOf(this);
-            Color = Color.Red; 
+            Color = Color.Red;
             IsSelected = true;
         }
 
         public void UnSelect()
         {
-            Color = Color.Green; 
+            Color = Color.Green;
             IsSelected = false;
         }
 
@@ -57,7 +57,7 @@ namespace TCBspline
 
         public static MyPointF operator *(MyPointF p1, float coef)
         {
-            return  p1 * (double)coef;
+            return p1 * (double)coef;
         }
 
         public static MyPointF operator *(MyPointF p1, double coef)

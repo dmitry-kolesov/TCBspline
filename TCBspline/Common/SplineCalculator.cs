@@ -4,9 +4,11 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
+using TCBspline.Model;
+
 namespace TCBspline
 {
-    class DataGraphic
+    class SplineCalculator
     {
         private MyPointF[] initPoints;
         private MyPointF[] points;
@@ -22,7 +24,7 @@ namespace TCBspline
         private int outYMax = 10;
 
 
-        public DataGraphic(MyPointF[] points, int width, int height, float tension, float continuty, float bias)//, PictureBox pb)
+        public SplineCalculator(MyPointF[] points, int width, int height, float tension, float continuty, float bias)//, PictureBox pb)
         {
             if (points != null && points.Length > 2)
             {
