@@ -5,18 +5,22 @@ using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 
+using TCBspline.Controller;
+
 namespace TCBspline
 {
     public partial class TcbSplineForm : Form
     {
-        PointsLogicAndDrawerController controller;
-
+        private MainController controller;
+        
         public TcbSplineForm()
         {
             InitializeComponent();
 
-            controller = new PointsLogicAndDrawerController(this.pictureBox);
+
+            controller = new MainController(this.pictureBox);
             controller.OnDraw += logic_Draw;
+            controller.OnUpdateImage += controller_UpdateImage;
 
             pictureBox.Paint += pictureBox_Paint;
             pictureBox.MouseClick += pictureBox_MouseClick;
@@ -29,6 +33,11 @@ namespace TCBspline
             pictureBox.MouseUp += pictureBox_MouseUp;
 
             pictureBox.SizeChanged += pictureBox_SizeChanged;
+        }
+
+        void controller_UpdateImage(Bitmap obj)
+        {
+            pictureBox.Image = obj;
         }
 
         void pictureBox_SizeChanged(object sender, EventArgs e)
@@ -76,7 +85,7 @@ namespace TCBspline
 
         void bar_ValueChanged(object sender, EventArgs e)
         {
-            controller.InitPictureBox();
+            controller.InitPictureBox(pictureBox.Width, pictureBox.Height);
             Draw();
         }
 
@@ -88,6 +97,16 @@ namespace TCBspline
         private void clearButton_Click(object sender, EventArgs e)
         {
             controller.ClearPoints();
+        }
+
+        private void undoBtn_Click(object sender, EventArgs e)
+        {
+            controller.Undo();
+        }
+
+        private void redoBtn_Click(object sender, EventArgs e)
+        {
+            controller.Redo();
         }
 
     }

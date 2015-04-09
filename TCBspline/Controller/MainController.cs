@@ -6,30 +6,43 @@ using System.Windows.Forms;
 
 using TCBspline.Model;
 
-namespace TCBspline
+namespace TCBspline.Controller
 {
-    class PointsLogicAndDrawerController
+    // points and drawer controller
+    class MainController
     {
-        DrawerController drawerController;
-
-        List<MyPointF> points = new List<MyPointF>();
+        private List<MyPointF> points = new List<MyPointF>();
         internal List<MyPointF> Points { get { return points; } }
 
-        bool wasChanged = false;
-        MyPointF selected;
+        private List<PointAction> actionsList;
+
+        private DrawerController drawerController;
+
+        private bool wasChanged = false;
+        private MyPointF selected;
+        private int pbxWidth;
+        private int pbxHeight;
 
         public delegate void OnDrawHandler();
         public event OnDrawHandler OnDraw;
 
-        internal PointsLogicAndDrawerController(PictureBox pbx)
-        {
-            drawerController = new DrawerController(pbx);
-            drawerController.InitPictureBox();
-        }
+        public event Action<Bitmap> OnUpdateImage;
 
-        public void InitPictureBox(int pbxWidth, int pbxHeight)
+        internal MainController(PictureBox pbx)
         {
-            drawerController.InitPictureBox();
+            actionsList = new List<PointAction>();
+
+            pbxWidth = pbx.Width;
+            pbxHeight = pbx.Height;
+            drawerController = new DrawerController(pbx.Width, pbx.Height);
+            drawerController.OnUpdateImage += drawerController_OnUpdateImage;
+        }
+        
+        public void InitPictureBox(int _pbxWidth, int _pbxHeight)
+        {
+            pbxWidth = _pbxWidth;
+            pbxHeight = _pbxHeight;
+            drawerController.InitPictureBox(pbxWidth, pbxHeight);
         }
 
         public void Draw(float tensionBarValue, float continuityBarValue, float biasBarValue)
@@ -43,6 +56,8 @@ namespace TCBspline
             {
                 selected.UnSelect();
                 selected = null;
+
+                actionsList[actionsList.Count - 1].SetNewPoint(selected);
             }
         }
 
@@ -51,24 +66,29 @@ namespace TCBspline
             if (selected != null)
             {
                 selected.UpdatePoint(new PointF(e.X, e.Y));
-                drawerController.InitPictureBox();
+                drawerController.InitPictureBox(pbxWidth, pbxHeight);
                 if (OnDraw != null) OnDraw();
             }
         }
 
         public void SelectOrAddNewPoint(MouseEventArgs e)
         {
-            var founded = GetPointInSurrounding(e.Location);
-            if ((founded != null) && points.Contains(founded))
+            var foundedPoint = GetPointInSurrounding(e.Location);
+            if ((foundedPoint != null) && points.Contains(foundedPoint))
             {
-                founded.SetSelected(points);
-                selected = founded;
+                foundedPoint.SetSelected(points);
+                selected = foundedPoint;
+
+                actionsList.Add(new PointAction(PointActionType.MovePoint, foundedPoint, null, points.IndexOf(foundedPoint)));
             }
             else
             {
-                drawerController.InitPictureBox();
-                points.Add(new MyPointF(e.Location.X, e.Location.Y));
+                drawerController.InitPictureBox(pbxWidth, pbxHeight);
+                var newPoint = new MyPointF(e.Location.X, e.Location.Y);
+                points.Add(newPoint);
                 wasChanged = true;
+
+                actionsList.Add(new PointAction(PointActionType.AddPoint, newPoint, null, points.Count - 1));
             }
         }
 
@@ -87,21 +107,32 @@ namespace TCBspline
             var founded = GetPointInSurrounding(e.Location);
             if (founded != null)
             {
-                drawerController.InitPictureBox();
+                drawerController.InitPictureBox(pbxWidth, pbxHeight);
+
+                actionsList.Add(new PointAction(PointActionType.DeletePoint, founded, null, points.IndexOf(founded)));
+
                 points.Remove(founded);
                 //pictureBox.Invalidate();
                 if (OnDraw != null) OnDraw();
+
             }
         }
 
         public void ClearPoints()
         {
-            drawerController.InitPictureBox();
+            drawerController.InitPictureBox(pbxWidth, pbxHeight);
             points.Clear();
             if (OnDraw != null) OnDraw();
         }
 
+        internal void Undo()
+        {
+ 
+        }
 
+        internal void Redo()
+        { }
+        
         private MyPointF GetPointInSurrounding(Point mousePosition)
         {
             if (points != null && points.Count > 0)
@@ -114,6 +145,12 @@ namespace TCBspline
                 }
             }
             return null;
+        }
+
+        private void drawerController_OnUpdateImage(Bitmap obj)
+        {
+            if (OnUpdateImage != null)
+                OnUpdateImage(obj);
         }
     }
 }

@@ -5,39 +5,41 @@ using System.Windows.Forms;
 
 using TCBspline.Model;
 
-namespace TCBspline
+namespace TCBspline.Controller
 {
     internal class DrawerController
     {
-        /// todo - obviouslly it is not good to have control inside controller, 
-        /// and it could be solved by forwarding only sizes of picture box here
-        /// and after forwarding sizes of picture box on changing it is sizes
-        /// but for me my solution was faster to realize
-        //PictureBox pictureBox;
+        public event Action<Bitmap> OnUpdateImage;
         Bitmap graphBmp;
+        int pictureBoxWidth;
+        int pictureBoxHeight;
 
-        internal DrawerController()//PictureBox pictureBox)
+        internal DrawerController(int _pictureBoxWidth, int _pictureBoxHeight)
         {
-            this.pictureBox = pictureBox;
+            InitPictureBox(_pictureBoxWidth, _pictureBoxHeight);
         }
 
-        internal void InitPictureBox(int pictureBoxWidth, int pictureBoxHeight)
+        internal void InitPictureBox(int _pictureBoxWidth, int _pictureBoxHeight)
         {
+            pictureBoxWidth = _pictureBoxWidth;
+            pictureBoxHeight = _pictureBoxHeight;
+
             graphBmp = new Bitmap(pictureBoxWidth, pictureBoxHeight);
-            pictureBox.Image = graphBmp;
             Graphics g = Graphics.FromImage(graphBmp);
             SolidBrush b = new SolidBrush(Color.White);
             g.FillRectangle(b, 0, 0, graphBmp.Width, graphBmp.Height);
+            if (OnUpdateImage != null)
+                OnUpdateImage(graphBmp);
         }
 
-        float devider = 10f;
+        float divider = 10f;
         internal void Draw(List<MyPointF> points, float tensionBarValue, float continuityBarValue, float biasBarValue)
         {
             try
             {
                 if (points != null && points.Count > 2)
                 {
-                    SplineCalculator dg = new SplineCalculator(points.ToArray(), pictureBox.Size.Width, pictureBox.Size.Height, tensionBarValue / devider, continuityBarValue / devider, biasBarValue / devider);
+                    SplineCalculator dg = new SplineCalculator(points.ToArray(), pictureBoxWidth, pictureBoxHeight, tensionBarValue / divider, continuityBarValue / divider, biasBarValue / divider);
                     var result = dg.GetSpline();
                     Draw(result);
                 }
@@ -52,8 +54,14 @@ namespace TCBspline
         {
             Graphics g = Graphics.FromImage(graphBmp);
             DrawPoints(points, g);
-            pictureBox.Image = graphBmp;
+            UpdateImage(graphBmp);
             g.Dispose();
+        }
+
+        private void UpdateImage(Bitmap updatedImage)
+        {
+            if (OnUpdateImage != null)
+                OnUpdateImage(updatedImage);
         }
 
         internal void DrawPoints(List<MyPointF> points, Graphics g)//
@@ -66,7 +74,7 @@ namespace TCBspline
         {
             Graphics g = Graphics.FromImage(graphBmp);
             DrawPoint(point, g);
-            pictureBox.Image = graphBmp;
+            UpdateImage(graphBmp);
             g.Dispose();
         }
 
@@ -87,7 +95,7 @@ namespace TCBspline
 
                 p1 = p2;
             }
-            pictureBox.Image = graphBmp;
+            UpdateImage(graphBmp);
             g.Dispose();
         }
 

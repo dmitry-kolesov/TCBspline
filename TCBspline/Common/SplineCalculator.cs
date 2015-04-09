@@ -18,13 +18,7 @@ namespace TCBspline
         private float continuty;
         private float bias;
 
-        private int outXMin = -10;
-        private int outXMax = 10;
-        private int outYMin = -10;
-        private int outYMax = 10;
-
-
-        public SplineCalculator(MyPointF[] points, int width, int height, float tension, float continuty, float bias)//, PictureBox pb)
+        public SplineCalculator(MyPointF[] points, int width, int height, float tension, float continuty, float bias)
         {
             if (points != null && points.Length > 2)
             {
@@ -43,43 +37,10 @@ namespace TCBspline
             {
                 if (points != null && points.Length < 2)
                 {
-                    MessageBox.Show("Please select points");
                     throw new Exception("Points was not selected");
                 }
             }
         }
-
-        //private PointF[] Scale(PointF[] points, ScaleDelegate scale)
-        //{
-        //    PointF[] result = new PointF[points.Length];
-        //    int i = 0;
-        //    foreach (var point in points)
-        //    {
-        //        result[i] = scale(point);
-        //        i++;
-        //    }
-        //    return result;
-        //}
-
-        //public delegate PointF ScaleDelegate(PointF point);
-
-        //private PointF BackScale(PointF point)
-        //{
-        //    var result = new PointF(ScaleX(point.X, outXMin, outXMax, 0, width), ScaleX(point.Y, outYMin, outYMax, 0, height));
-        //    return result;
-        //}
-
-        //private PointF Scale(PointF point)
-        //{
-        //    var result = new PointF(ScaleX(point.X, 0, width, outXMin, outXMax), ScaleX(point.Y, 0, height, outYMin, outYMax));
-        //    return result;
-        //}
-
-        //private static float ScaleX(float inX, float inMin, float inMax, float outMin, float outMax)
-        //{
-        //    var newX = ((float)(inX - inMin) / (float)(inMax - inMin) * (float)(outMax - outMin));
-        //    return (float)newX;
-        //}
 
         internal MyPointF[] GetSpline(int discrete = 10)
         {
@@ -90,14 +51,12 @@ namespace TCBspline
             var start = 0f;
 
             MyPointF r1 = (((p[1])) - ((p[0])));
-            MyPointF ra1 = r1;// new MyPointF();
+            MyPointF ra1 = r1;
             MyPointF r2 = ((1.5f * (((p[1])) - ((p[0]))) - 0.5f * ra1) * (1 - tension));
             MyPointF rbLast = (ra1);
             for (int i = 1; i < p.Length - 1; i++)
             {
-                //var next1 = (i + 1) % p.Length;
-                var next = (i + 1);// % p.Length;
-                //var prev = (i - 1) % p.Length;
+                var next = (i + 1);
                 if (next < p.Length)
                 {
                     r1 = CalcRAB(p[i - 1], p[i], p[next], true);
