@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 
 namespace TCBspline.Model
 {
@@ -14,6 +15,8 @@ namespace TCBspline.Model
 
     class PointAction
     {
+        public PointF OldCoord { get; private set; }
+        public PointF NewCoord { get; private set; }
         public PointActionType ActionType { get; private set; }
         public MyPointF Old { get; private set; }
         public MyPointF New { get; private set; }
@@ -24,6 +27,9 @@ namespace TCBspline.Model
                              MyPointF newPoint,
                              int pointInd)
         {
+            // as a structure it would copy by value
+            if (oldPoint != null)
+                OldCoord = oldPoint.Point;
             ActionType = actionType;
             Old = oldPoint;
             New = newPoint;
@@ -33,6 +39,8 @@ namespace TCBspline.Model
         internal void SetNewPoint(MyPointF newPoint)
         {
             New = newPoint;
+            if (newPoint != null)
+                NewCoord = newPoint.Point;
         }
     }
 }

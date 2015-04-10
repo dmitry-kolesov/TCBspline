@@ -48,7 +48,6 @@ namespace TCBspline
             var result = new MyPointF[(p.Length - 1) * discrete + 1];
 
             var delta = 1f / discrete;
-            var start = 0f;
 
             MyPointF r1 = (((p[1])) - ((p[0])));
             MyPointF ra1 = r1;

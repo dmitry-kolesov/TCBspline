@@ -37,7 +37,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
@@ -46,10 +45,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\SplineCalculator.cs" />
+    <Compile Include="Common\XmlHelper.cs" />
     <Compile Include="Controller\DrawerController.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Action.cs" />
+    <Compile Include="Model\PointsCollection.cs" />
     <Compile Include="TcbSplineForm.cs">
       <SubType>Form</SubType>
     </Compile>

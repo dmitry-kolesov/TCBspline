@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 
+using TCBspline.Common;
 using TCBspline.Model;
 
 namespace TCBspline.Controller
@@ -14,7 +17,9 @@ namespace TCBspline.Controller
         private List<MyPointF> points = new List<MyPointF>();
         internal List<MyPointF> Points { get { return points; } }
 
-        private List<PointAction> actionsList;
+        /// it is better to move to undo redo controller
+        private List<PointAction> toUndoActionsList;
+        private List<PointAction> toRedoActionsList;
 
         private DrawerController drawerController;
 
@@ -30,14 +35,15 @@ namespace TCBspline.Controller
 
         internal MainController(PictureBox pbx)
         {
-            actionsList = new List<PointAction>();
+            toUndoActionsList = new List<PointAction>();
+            toRedoActionsList = new List<PointAction>();
 
             pbxWidth = pbx.Width;
             pbxHeight = pbx.Height;
             drawerController = new DrawerController(pbx.Width, pbx.Height);
             drawerController.OnUpdateImage += drawerController_OnUpdateImage;
         }
-        
+
         public void InitPictureBox(int _pbxWidth, int _pbxHeight)
         {
             pbxWidth = _pbxWidth;
@@ -54,10 +60,10 @@ namespace TCBspline.Controller
         {
             if (selected != null)
             {
+                toUndoActionsList[toUndoActionsList.Count - 1].SetNewPoint(selected);
+
                 selected.UnSelect();
                 selected = null;
-
-                actionsList[actionsList.Count - 1].SetNewPoint(selected);
             }
         }
 
@@ -79,7 +85,8 @@ namespace TCBspline.Controller
                 foundedPoint.SetSelected(points);
                 selected = foundedPoint;
 
-                actionsList.Add(new PointAction(PointActionType.MovePoint, foundedPoint, null, points.IndexOf(foundedPoint)));
+                toUndoActionsList.Add(new PointAction(PointActionType.MovePoint, foundedPoint, null, points.IndexOf(foundedPoint)));
+                toRedoActionsList.Clear();
             }
             else
             {
@@ -88,7 +95,8 @@ namespace TCBspline.Controller
                 points.Add(newPoint);
                 wasChanged = true;
 
-                actionsList.Add(new PointAction(PointActionType.AddPoint, newPoint, null, points.Count - 1));
+                toUndoActionsList.Add(new PointAction(PointActionType.AddPoint, newPoint, null, points.Count - 1));
+                toRedoActionsList.Clear();
             }
         }
 
@@ -109,7 +117,8 @@ namespace TCBspline.Controller
             {
                 drawerController.InitPictureBox(pbxWidth, pbxHeight);
 
-                actionsList.Add(new PointAction(PointActionType.DeletePoint, founded, null, points.IndexOf(founded)));
+                toUndoActionsList.Add(new PointAction(PointActionType.DeletePoint, founded, null, points.IndexOf(founded)));
+                toRedoActionsList.Clear();
 
                 points.Remove(founded);
                 //pictureBox.Invalidate();
@@ -125,14 +134,6 @@ namespace TCBspline.Controller
             if (OnDraw != null) OnDraw();
         }
 
-        internal void Undo()
-        {
- 
-        }
-
-        internal void Redo()
-        { }
-        
         private MyPointF GetPointInSurrounding(Point mousePosition)
         {
             if (points != null && points.Count > 0)
@@ -147,10 +148,115 @@ namespace TCBspline.Controller
             return null;
         }
 
+        private void FullRedraw()
+        {
+            drawerController.InitPictureBox(pbxWidth, pbxHeight);
+            wasChanged = true;
+            if (OnDraw != null) OnDraw();
+
+        }
+
         private void drawerController_OnUpdateImage(Bitmap obj)
         {
             if (OnUpdateImage != null)
                 OnUpdateImage(obj);
         }
+
+        #region undo / redo logic
+        internal void Undo()
+        {
+            MoveLastUndoRedo(toUndoActionsList, toRedoActionsList, true);
+        }
+
+        internal void Redo()
+        {
+            MoveLastUndoRedo(toRedoActionsList, toUndoActionsList, false);
+        }
+
+        private void MoveLastUndoRedo(List<PointAction> src, List<PointAction> dest, bool isUndo)
+        {
+            if (src.Count > 0)
+            {
+                var elementToMove = src[src.Count - 1];
+                dest.Add(elementToMove);
+                src.Remove(elementToMove);
+                ProcessAction(elementToMove, isUndo);
+            }
+        }
+
+        private void ProcessAction(PointAction pointAction, bool isUndo)
+        {
+            drawerController.InitPictureBox(pbxWidth, pbxHeight);
+            if (isUndo)
+            {
+                switch (pointAction.ActionType)
+                {
+                    case (PointActionType.AddPoint):
+                        {
+                            var wasFounded = points.Remove(pointAction.Old);
+                        }
+                        break;
+                    case (PointActionType.DeletePoint):
+                        {
+                            if (pointAction.PointInd < points.Count)
+                                points.Insert(pointAction.PointInd, pointAction.Old);
+                            else
+                                points.Add(pointAction.Old);
+                        }
+                        break;
+                    case (PointActionType.MovePoint):
+                        {
+                            var founded = points.FirstOrDefault(o => o.Equals(pointAction.New));
+                            if (founded != null)
+                                founded.UpdatePoint(pointAction.OldCoord);
+                        }
+                        break;
+                }
+            }
+            else
+            {
+                switch (pointAction.ActionType)
+                {
+                    case (PointActionType.AddPoint):
+                        {
+                            points.Add(pointAction.Old);
+                        }
+                        break;
+                    case (PointActionType.DeletePoint):
+                        {
+                            points.Remove(pointAction.Old);
+                        }
+                        break;
+                    case (PointActionType.MovePoint):
+                        {
+                            var founded = points.FirstOrDefault(o => o.Equals(pointAction.Old));
+                            if (founded != null)
+                                founded.UpdatePoint(pointAction.NewCoord);
+                        }
+                        break;
+                }
+            }
+            wasChanged = true;
+            if (OnDraw != null) OnDraw();
+        }
+        #endregion
+
+        #region Xml serialization / deserialization
+
+        internal void Serialize(string path)
+        {
+            var xmlHelper = new XmlHelper();
+            xmlHelper.Serialize(path, points);
+        }
+
+        internal void Deserialize(string path)
+        {
+            var xmlHelper = new XmlHelper();
+            points = xmlHelper.Deserialize(path);
+
+            FullRedraw();
+        }
+
+        #endregion
     }
 }

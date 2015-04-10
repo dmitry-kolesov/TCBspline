@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Xml.Serialization;
 
 namespace TCBspline.Model
 {
-    internal class MyPointF
+    [Serializable]
+    public class MyPointF
     {
+        public MyPointF()
+        { }
+
         public MyPointF(float x, float y)
         {
             point = new PointF(x, y);
@@ -22,27 +27,40 @@ namespace TCBspline.Model
         }
 
         private PointF point;
+
+        [XmlAttribute]
         public int Index;
-        internal PointF Point { get { return point; } }
+
+        public PointF Point { get { return point; } set { point = value; } }
+
         internal float X { get { return point.X; } set { point.X = value; } }
         internal float Y { get { return point.Y; } set { point.Y = value; } }
 
         private Color color = System.Drawing.Color.Green;
-        internal Color Color { get { return color; } set { color = value; } }
 
-        public bool IsSelected = false;
+        [XmlIgnore]
+        public Color Color { get { return color; } set { color = value; } }
+
+        [XmlElement("Color")]
+        public int ColorAsArgb
+        {
+            get { return Color.ToArgb(); }
+            set { Color = Color.FromArgb(value); }
+        }
+
+        private bool isSelected = false;
 
         public void SetSelected(List<MyPointF> points)
         {
             Index = points.IndexOf(this);
             Color = Color.Red;
-            IsSelected = true;
+            isSelected = true;
         }
 
         public void UnSelect()
         {
             Color = Color.Green;
-            IsSelected = false;
+            isSelected = false;
         }
 
         public void UpdatePoint(PointF newPoint)

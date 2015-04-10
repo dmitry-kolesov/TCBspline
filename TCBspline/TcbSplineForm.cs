@@ -12,7 +12,7 @@ namespace TCBspline
     public partial class TcbSplineForm : Form
     {
         private MainController controller;
-        
+
         public TcbSplineForm()
         {
             InitializeComponent();
@@ -72,7 +72,6 @@ namespace TCBspline
         void pictureBox_Paint(object sender, PaintEventArgs e)
         {
             controller.PointsChanged(e);
-            Draw();
         }
 
         void pictureBox_MouseClick(object sender, MouseEventArgs e)
@@ -107,6 +106,31 @@ namespace TCBspline
         private void redoBtn_Click(object sender, EventArgs e)
         {
             controller.Redo();
+        }
+
+        private void saveBtn_Click(object sender, EventArgs e)
+        {
+            var dlg = new SaveFileDialog();
+            dlg.FileName = "points.xml";
+            dlg.Filter = "Xml files (*.xml)|*.xml|All files (*.*)|*.*";
+
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                controller.Serialize(dlg.FileName);
+            }
+        }
+
+        private void loadBtn_Click(object sender, EventArgs e)
+        {
+            var dlg = new OpenFileDialog();
+            dlg.FileName = "points.xml";
+            dlg.Filter = "Xml files (*.txt)|*.txt|All files (*.*)|*.*";
+
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                controller.Deserialize(dlg.FileName);
+            }
+
         }
 
     }
